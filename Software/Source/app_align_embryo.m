@@ -812,133 +812,140 @@ classdef app_align_embryo < matlab.apps.AppBase
             app.dispmsg = "# Set optimal alignment input path:" + inputPathOptAlign + newline + newline + app.dispmsg + newline + newline;
             app.TextArea_2.Value = app.dispmsg;                          
             
+            optFileList = dir([inputPathOptAlign '/*.csv']);
+            numOptFile = size(optFileList,1);
             
-            inputPathSample = app.globalState.samplePath; 
-            temp = dir([inputPathSample '/*.csv']);
-            inputPathSampleCoordinateFiles = [];
-            
-            app.msgcount = app.msgcount + 1;
-            if app.msgcount>100
-                app.dispmsg = "";
-            end
-            app.dispmsg = "# Set sample coordinate file input path:" + inputPathSample + newline + newline + app.dispmsg + newline + newline;
-            app.TextArea_2.Value = app.dispmsg;   
-            
+            if numOptFile == 0
+                
+                uialert(app.ceEmbryoAlignerv10UIFigure,'Please complete optimal alignment for all the samples!','Virtual embryo model construction','Icon','error');  
+                
+            else
+                inputPathSample = app.globalState.samplePath; 
+                temp = dir([inputPathSample '/*.csv']);
+                inputPathSampleCoordinateFiles = [];
 
-            for numFiles = 1:size(temp,1)
-                currentFN = temp(numFiles).name;
-                inputPathSampleCoordinateFiles = [inputPathSampleCoordinateFiles;string([inputPathSample '/' currentFN])]
-            end
-            
-            tabTemplateFileNames = app.UITable.Data;                    
-            templatePath = app.globalState.templatePath;
-            inputPathTemplateCoordinateFile = '';
-            
-            app.msgcount = app.msgcount + 1;
-            if app.msgcount>100
-                app.dispmsg = "";
-            end
-            app.dispmsg = "# Set template coordinate file input path:" + templatePath + newline + newline + app.dispmsg + newline + newline;
-            app.TextArea_2.Value = app.dispmsg;  
-            
-            
-            if size(tabTemplateFileNames,1)>=1
-                tabTemplateFileNames = tabTemplateFileNames(tabTemplateFileNames.Selected,:);
-                if size(tabTemplateFileNames,1)>1
-                   uialert(app.ceEmbryoAlignerv10UIFigure,'Please select only one template sample!','Template selection','Icon','error');                             
-                else
-                            inputPathTemplateCoordinateFile = [char(templatePath) '/' char(tabTemplateFileNames.FileName)];
-                   
-                            app.msgcount = app.msgcount + 1;
-                            if app.msgcount>100
-                                app.dispmsg = "";
-                            end
-                            app.dispmsg = "# Read template coordinate file:" + inputPathTemplateCoordinateFile + newline + newline + app.dispmsg + newline + newline;
-                            app.TextArea_2.Value = app.dispmsg;                              
-                            
-                            disp(inputPathSampleCoordinateFiles);
-                            disp(inputPathTemplateCoordinateFile);            
-                            
-                            outputFilePathAvgEmbryo = [inputPathSample '/avg_embryo/'];
-                            
-                            app.msgcount = app.msgcount + 1;
-                            if app.msgcount>100
-                                app.dispmsg = "";
-                            end
-                            app.dispmsg = "# Set virtual embryo output path:" + outputFilePathAvgEmbryo + newline + newline + app.dispmsg + newline + newline;
-                            app.TextArea_2.Value = app.dispmsg;  
-                            
-                            
-                            if isfolder(outputFilePathAvgEmbryo)
-                                delete([outputFilePathAvgEmbryo '*']);            
-                            else
-                                mkdir(outputFilePathAvgEmbryo);
-                            end            
-                           
-                            
-                            optAlignSettingAll = [];
-                            templateSampleTimeUniqueAll = [];
-                            referenceEmbryos_all = {};
-                            referenceCells_all = {};
-                            referenceCoords_all = {};    
-                            
-                            thresCR = 0.1;
-                            aspectRatioTemplate = app.UITable3.Data(1,:);
-                            aspectRatioSample = app.UITable3.Data(2,:);
-                            
-                            
-                            app.msgcount = app.msgcount + 1;
-                            if app.msgcount>100
-                                app.dispmsg = "";
-                            end
-                            app.dispmsg = "# Begin generating virtual embryo" + outputFilePathAvgEmbryo + newline + newline + app.dispmsg + newline + newline;
-                            app.TextArea_2.Value = app.dispmsg;               
-                            
-                            app.r1 = ReferenceEmbryo(inputPathOptAlign,thresCR,optAlignSettingAll,templateSampleTimeUniqueAll,inputPathTemplateCoordinateFile,inputPathSampleCoordinateFiles,aspectRatioTemplate, aspectRatioSample,referenceEmbryos_all,referenceCells_all,referenceCoords_all,outputFilePathAvgEmbryo); 
-                            
-                            app.r1 = statisticAlignmentPerformance(app.r1);                            
-                            app.r1 = generateReferenceEmbryo(app.r1,app.UIAxes2_2);
-                            app.r1 = genReferenceCsv(app.r1,outputFilePathAvgEmbryo,app.UIAxes2_2);                             
-                        
-                            avgEmb = app.r1.avgEmb;                           
-                            uniqueTime = unique(avgEmb.time);
-                            
-                            cla(app.UIAxes3)
-                            for s = 1:size(uniqueTime,1) 
-                                
+                app.msgcount = app.msgcount + 1;
+                if app.msgcount>100
+                    app.dispmsg = "";
+                end
+                app.dispmsg = "# Set sample coordinate file input path:" + inputPathSample + newline + newline + app.dispmsg + newline + newline;
+                app.TextArea_2.Value = app.dispmsg;   
+
+
+                for numFiles = 1:size(temp,1)
+                    currentFN = temp(numFiles).name;
+                    inputPathSampleCoordinateFiles = [inputPathSampleCoordinateFiles;string([inputPathSample '/' currentFN])]
+                end
+
+                tabTemplateFileNames = app.UITable.Data;                    
+                templatePath = app.globalState.templatePath;
+                inputPathTemplateCoordinateFile = '';
+
+                app.msgcount = app.msgcount + 1;
+                if app.msgcount>100
+                    app.dispmsg = "";
+                end
+                app.dispmsg = "# Set template coordinate file input path:" + templatePath + newline + newline + app.dispmsg + newline + newline;
+                app.TextArea_2.Value = app.dispmsg;  
+
+
+                if size(tabTemplateFileNames,1)>=1
+                    tabTemplateFileNames = tabTemplateFileNames(tabTemplateFileNames.Selected,:);
+                    if size(tabTemplateFileNames,1)>1
+                       uialert(app.ceEmbryoAlignerv10UIFigure,'Please select only one template sample!','Template selection','Icon','error');                             
+                    else
+                                inputPathTemplateCoordinateFile = [char(templatePath) '/' char(tabTemplateFileNames.FileName)];
+
                                 app.msgcount = app.msgcount + 1;
                                 if app.msgcount>100
                                     app.dispmsg = "";
                                 end
-                                app.dispmsg = "# Generate virtual embryo at time point :" + num2str(uniqueTime(s)) + newline + newline + app.dispmsg + newline + newline;
-                                app.TextArea_2.Value = app.dispmsg;                  
-                                
-                                currT = uniqueTime(s);
-                                tabCurr = avgEmb(avgEmb.time == currT,:);
-                                plot3(app.UIAxes3,tabCurr.z,tabCurr.x,tabCurr.y,'ro');
-                                daspect(app.UIAxes3,[1 1 1])  ;             
-                                grid(app.UIAxes3,'on');
-                                xlabel(app.UIAxes3, 'X')
-                                ylabel(app.UIAxes3, 'Y')
-                                zlabel(app.UIAxes3, 'Z')
-                                title(app.UIAxes3,['t=' num2str(uniqueTime(s)) ' numcell=' num2str(size(tabCurr,1))]);
-                                hold(app.UIAxes3,'off');
-                                pause(0.2);
-                                
-                            end 
-                            
-                            app.msgcount = app.msgcount + 1;
-                            if app.msgcount>100
-                                app.dispmsg = "";
-                            end
-                            app.dispmsg = "# Virtual embryo generated, done." + newline + newline + app.dispmsg + newline + newline;
-                            app.TextArea_2.Value = app.dispmsg;    
-                            
-                    end                     
-              else
-                        uialert(app.ceEmbryoAlignerv10UIFigure,'Select at least one template sample!','Template selection','Icon','error');                        
-              end
-            
+                                app.dispmsg = "# Read template coordinate file:" + inputPathTemplateCoordinateFile + newline + newline + app.dispmsg + newline + newline;
+                                app.TextArea_2.Value = app.dispmsg;                              
+
+                                disp(inputPathSampleCoordinateFiles);
+                                disp(inputPathTemplateCoordinateFile);            
+
+                                outputFilePathAvgEmbryo = [inputPathSample '/avg_embryo/'];
+
+                                app.msgcount = app.msgcount + 1;
+                                if app.msgcount>100
+                                    app.dispmsg = "";
+                                end
+                                app.dispmsg = "# Set virtual embryo output path:" + outputFilePathAvgEmbryo + newline + newline + app.dispmsg + newline + newline;
+                                app.TextArea_2.Value = app.dispmsg;  
+
+
+                                if isfolder(outputFilePathAvgEmbryo)
+                                    delete([outputFilePathAvgEmbryo '*']);            
+                                else
+                                    mkdir(outputFilePathAvgEmbryo);
+                                end            
+
+
+                                optAlignSettingAll = [];
+                                templateSampleTimeUniqueAll = [];
+                                referenceEmbryos_all = {};
+                                referenceCells_all = {};
+                                referenceCoords_all = {};    
+
+                                thresCR = 0.1;
+                                aspectRatioTemplate = app.UITable3.Data(1,:);
+                                aspectRatioSample = app.UITable3.Data(2,:);
+
+
+                                app.msgcount = app.msgcount + 1;
+                                if app.msgcount>100
+                                    app.dispmsg = "";
+                                end
+                                app.dispmsg = "# Begin generating virtual embryo" + outputFilePathAvgEmbryo + newline + newline + app.dispmsg + newline + newline;
+                                app.TextArea_2.Value = app.dispmsg;               
+
+                                app.r1 = ReferenceEmbryo(inputPathOptAlign,thresCR,optAlignSettingAll,templateSampleTimeUniqueAll,inputPathTemplateCoordinateFile,inputPathSampleCoordinateFiles,aspectRatioTemplate, aspectRatioSample,referenceEmbryos_all,referenceCells_all,referenceCoords_all,outputFilePathAvgEmbryo); 
+
+                                app.r1 = statisticAlignmentPerformance(app.r1);                            
+                                app.r1 = generateReferenceEmbryo(app.r1,app.UIAxes2_2);
+                                app.r1 = genReferenceCsv(app.r1,outputFilePathAvgEmbryo,app.UIAxes2_2);                             
+
+                                avgEmb = app.r1.avgEmb;                           
+                                uniqueTime = unique(avgEmb.time);
+
+                                cla(app.UIAxes3)
+                                for s = 1:size(uniqueTime,1) 
+
+                                    app.msgcount = app.msgcount + 1;
+                                    if app.msgcount>100
+                                        app.dispmsg = "";
+                                    end
+                                    app.dispmsg = "# Generate virtual embryo at time point :" + num2str(uniqueTime(s)) + newline + newline + app.dispmsg + newline + newline;
+                                    app.TextArea_2.Value = app.dispmsg;                  
+
+                                    currT = uniqueTime(s);
+                                    tabCurr = avgEmb(avgEmb.time == currT,:);
+                                    plot3(app.UIAxes3,tabCurr.z,tabCurr.x,tabCurr.y,'ro');
+                                    daspect(app.UIAxes3,[1 1 1])  ;             
+                                    grid(app.UIAxes3,'on');
+                                    xlabel(app.UIAxes3, 'X')
+                                    ylabel(app.UIAxes3, 'Y')
+                                    zlabel(app.UIAxes3, 'Z')
+                                    title(app.UIAxes3,['t=' num2str(uniqueTime(s)) ' numcell=' num2str(size(tabCurr,1))]);
+                                    hold(app.UIAxes3,'off');
+                                    pause(0.2);
+
+                                end 
+
+                                app.msgcount = app.msgcount + 1;
+                                if app.msgcount>100
+                                    app.dispmsg = "";
+                                end
+                                app.dispmsg = "# Virtual embryo generated, done." + newline + newline + app.dispmsg + newline + newline;
+                                app.TextArea_2.Value = app.dispmsg;    
+
+                        end                     
+                  else
+                            uialert(app.ceEmbryoAlignerv10UIFigure,'Select at least one template sample!','Template selection','Icon','error');                        
+                end
+            end
         end
 
         function SearchButtonPushed(app, event)
